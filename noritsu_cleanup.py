@@ -1,9 +1,9 @@
 from pathlib import Path
 
 # assume folder structure:
-# 20211226/
-#   00007466/
-#     000074660001_00.jpg
+# 20211226/  <- date
+#   00007466/  <- roll/order number
+#     000074660001_00.jpg  <- roll/order number + frame number + frame name
 #     000074660002_0.jpg
 #     000074660003_1.jpg
 #   00007467/
@@ -21,6 +21,9 @@ class NoritsuEZCCleaner:
         EZController exports images into a dir for each order number, where the
         directory name is just the order number, zero-padded to 8 characters.
         So we just need to find all directories that are named with 8 digits.
+
+        Unfortunately, the parent directory (which is the date) is also 8
+        digits...
         """
         return Path.cwd().glob("**/" + ("[0-9]" * 8))
 
