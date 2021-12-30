@@ -25,7 +25,7 @@ class NoritsuEZCCleaner:
         pass
 
     def clean(self):
-        for image_dir in self.find_all_image_dirs():
+        for image_dir in sorted(self.find_all_image_dirs()):
             self.rename_images(image_dir)
 
     def find_all_image_dirs(self):
@@ -39,16 +39,19 @@ class NoritsuEZCCleaner:
         """
         return Path.cwd().glob("**/" + ("[0-9]" * 8))
 
-    def rename_images(self, images_dir, roll_padding=4):
+    def rename_images(self, images_dir,
+                      roll_padding=4, use_frame_names=False):
         """
         Renames the images in the images_dir directory in the format:
             R{roll_number}F{frame_name}.jpg (or .tif)
 
         roll_padding is how many characters of zero padding to add for the
         roll number
+        use_frame_names is whether to use the DX reader frame numbers/names
+        in the final filename or just number them sequentially.
         """
         roll_number = None
-        for image_path in images_dir.glob("*"):
+        for image_path in sorted(images_dir.glob("*")):
             filename = image_path.stem
             prefix = image_path.parent
             suffix = image_path.suffix
@@ -61,14 +64,19 @@ class NoritsuEZCCleaner:
                 raise ValueError(
                     f"image filename doesn't match expected format: "
                     f"{image_path}")
+
             if not roll_number:
                 roll_number = match.group("roll_number")
             elif roll_number != match.group("roll_number"):
                 raise ValueError(
                     f"image filename doesn't match other files: {image_path}")
-            formatted_roll_number = f"{int(roll_number):0>{roll_padding}d}"
 
-            frame_name = match.group("frame_name")
+            formatted_roll_number = f"{int(roll_number):0>{roll_padding}d}"
+            if use_frame_names:
+                frame_name = match.group("frame_name")
+            else:
+                frame_number = match.group("frame_number")
+                frame_name = f"{int(frame_number):0>2d}"
             new_filename = f"R{formatted_roll_number}F{frame_name}"
 
             new_filepath = prefix.joinpath(f"{new_filename}{suffix}")
