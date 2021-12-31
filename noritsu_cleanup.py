@@ -87,7 +87,7 @@ class NoritsuEZCCleaner:
         infohd_path = images_dir.joinpath("Info_HD.txt")
         if infohd_path.exists() and infohd_path.is_file():
             print(f"deleting {infohd_path}")
-            pass  # infohd_path.unlink()
+            infohd_path.unlink()
 
     def rename_images(self, images_dir):
         """
@@ -95,7 +95,7 @@ class NoritsuEZCCleaner:
             R{roll_number}F{frame_name}.jpg (or .tif)
 
         images_dir is a path object that represents the directory of images to
-        operate on.
+        operate on
         """
         roll_number = None
         for image_path in sorted(images_dir.glob("*")):
@@ -131,7 +131,7 @@ class NoritsuEZCCleaner:
 
             new_filepath = prefix.joinpath(f"{new_filename}{suffix}")
             print(f"{image_path.name} => {new_filename}{suffix}")
-            # image_path.rename(new_filepath)
+            image_path.rename(new_filepath)
 
     def fix_timestamps(self, images_dir):
         """
@@ -157,6 +157,11 @@ class NoritsuEZCCleaner:
         frame name in the filenames, we would get cases where ###, 00, 0, E, XA
         frames get out of order, because LR would have to use filename to sort
         since they'd all have the same capture time.
+
+        TODO: There's something incompatible with Adobe Bridge, where it can't
+        rotate any of the files after this script updates the EXIF data.
+
+        TODO: also test on TIF files to make sure they behave properly.
 
         images_dir is a path object that represents the directory of images to
         operate on.
@@ -193,8 +198,8 @@ class NoritsuEZCCleaner:
                   f"{exif_image.datetime_original}:"
                   f"{exif_image.subsec_time_original}")
 
-            # with image_path.open("wb") as image_file_write:
-            #     image_file_write.write(exif_image.get_file())
+            with image_path.open("wb") as image_file_write:
+                image_file_write.write(exif_image.get_file())
 
 
 if __name__ == "__main__":
