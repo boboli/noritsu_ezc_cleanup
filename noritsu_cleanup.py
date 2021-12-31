@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import argparse
 import re
 
 # assume folder structure:
@@ -22,14 +23,21 @@ class NoritsuEZCCleaner:
         r"(?P<frame_name>.*)"
     image_name_matcher = re.compile(IMAGE_NAME_PATTERN)
 
-    def __init__(self):
-        pass
+    def __init__(self, search_path=None):
+        """
+        search_path is a str representing the path to search for images to fix.
+        If not provided, search_path will be the current working directory.
+        """
+        if not search_path:
+            self.search_path = Path.cwd()
+        else:
+            self.search_path = Path(search_path)
 
     def clean(self):
         for image_dir in sorted(self.find_all_image_dirs()):
             self.rename_images(image_dir)
 
-    def find_all_image_dirs(self, path=None):
+    def find_all_image_dirs(self):
         """
         EZController exports images into a dir for each order number, where the
         directory name is just the order number, zero-padded to 8 characters.
@@ -37,13 +45,8 @@ class NoritsuEZCCleaner:
 
         Unfortunately, the parent directory (which is the date) is also 8
         digits...
-
-        input path is the Path representing the root path to search, if None,
-        this will use the current working directory.
         """
-        if not path:
-            path = Path.cwd()
-        return path.glob("**/" + ("[0-9]" * 8))
+        return self.search_path.glob("**/" + ("[0-9]" * 8))
 
     def rename_images(self, images_dir,
                       roll_padding=4, use_frame_names=False):
@@ -110,5 +113,17 @@ class NoritsuEZCCleaner:
 
 
 if __name__ == "__main__":
-    cleaner = NoritsuEZCCleaner()
+    parser = argparse.ArgumentParser(
+        description="Sanitizes Noritsu scan files by renaming images and "
+        "correcting EXIF metadata."
+    )
+    parser.add_argument(
+        "search_path", nargs="?", default=None,
+        help="The path to search for Noritsu scan files. If not provided, "
+        "will use current working directory."
+    )
+
+    args = parser.parse_args()
+
+    cleaner = NoritsuEZCCleaner(args.search_path)
     cleaner.clean()
