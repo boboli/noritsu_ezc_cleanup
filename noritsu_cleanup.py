@@ -52,6 +52,7 @@ class NoritsuEZCCleaner:
 
     def clean(self):
         for image_dir in self.find_all_image_dirs():
+            self.delete_infohd_file(image_dir)
             self.fix_timestamps(image_dir)
             self.rename_images(image_dir)
 
@@ -74,6 +75,19 @@ class NoritsuEZCCleaner:
             self.search_path.glob("**/" + self.IMAGE_DIR_GLOB_PATTERN))
 
         return found_dirs
+
+    def delete_infohd_file(self, images_dir):
+        """
+        Deletes the Info_HD.txt file that EZC generates if you ask it to always
+        save to HDD without confirming.
+
+        images_dir is a path object that represents the directory of images to
+        operate on.
+        """
+        infohd_path = images_dir.joinpath("Info_HD.txt")
+        if infohd_path.exists() and infohd_path.is_file():
+            print(f"deleting {infohd_path}")
+            pass  # infohd_path.unlink()
 
     def rename_images(self, images_dir):
         """
