@@ -16,6 +16,7 @@ import re
 
 
 class NoritsuEZCCleaner:
+    IMAGE_DIR_GLOB_PATTERN = "[0-9]" * 8
     IMAGE_NAME_PATTERN = \
         r"(?P<roll_number>\d{8})" \
         r"(?P<frame_number>\d{4})" \
@@ -46,7 +47,16 @@ class NoritsuEZCCleaner:
         Unfortunately, the parent directory (which is the date) is also 8
         digits...
         """
-        return self.search_path.glob("**/" + ("[0-9]" * 8))
+        found_dirs = []
+        # if the search_path itself is a image dir, add it to beginning of
+        # results
+        if self.search_path.is_dir() and self.search_path.match(
+                self.IMAGE_DIR_GLOB_PATTERN):
+            found_dirs.append(self.search_path)
+        found_dirs += sorted(
+            self.search_path.glob("**/" + self.IMAGE_DIR_GLOB_PATTERN))
+
+        return found_dirs
 
     def rename_images(self, images_dir,
                       roll_padding=4, use_frame_names=False):
