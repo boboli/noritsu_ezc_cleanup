@@ -1,6 +1,8 @@
 from pathlib import Path
+from datetime import datetime
 
 import argparse
+import exif
 import re
 
 # assume folder structure:
@@ -50,6 +52,7 @@ class NoritsuEZCCleaner:
 
     def clean(self):
         for image_dir in self.find_all_image_dirs():
+            self.add_date_info(image_dir)
             self.rename_images(image_dir)
 
     def find_all_image_dirs(self):
@@ -113,21 +116,71 @@ class NoritsuEZCCleaner:
             new_filename = f"R{formatted_roll_number}F{frame_name}"
 
             new_filepath = prefix.joinpath(f"{new_filename}{suffix}")
-            print(f"{filename} => {new_filename}")
+            print(f"{image_path.name} => {new_filename}{suffix}")
             # image_path.rename(new_filepath)
 
     def add_date_info(self, images_dir):
         """
         Adds the DateTimeOriginal EXIF tag to all images, based on the
-        filesystem creation timestamp of the file. This fixes the issue where
+        filesystem modified timestamp of the file. This fixes the issue where
         rotating a file in Finder or Adobe Bridge will adjust the image's
         modified timestamp, messing up programs that sort by Capture Time
         (such as Lightroom).
 
+        We set the capture times of the files as such:
+            1st image gets the same capture time as its file modified time.
+            2nd image gets the 1st image's capture time, but +1 millisecond.
+            3rd image gets the 1st image's capture time, but +2 milliseconds.
+
+        We can't just save each image's modified time as its capture time
+        because EZController doesn't guarantee that it saves the images in
+        sequential order, sometimes a later frame gets saved before an earlier
+        one.
+
+        The adding of milliseconds helps preserve the sorting order in programs
+        like Lightroom since the ordering is also enforced by the capture time
+        set.  If all files got the same capture time, and we were saving the
+        frame name in the filenames, we would get cases where ###, 00, 0, E, XA
+        frames get out of order, because LR would have to use filename to sort
+        since they'd all have the same capture time.
+
         images_dir is a path object that represents the directory of images to
         operate on.
         """
-        pass
+        first_image_mtime = None
+        image_num = 0
+        for image_path in sorted(images_dir.glob("*")):
+            suffix = image_path.suffix  # the extension including the .
+
+            if str(suffix).lower() not in (".jpg", ".tif") or \
+                    not image_path.is_file():
+                continue
+            # only bump counter for jpgs and tiffs
+            image_num += 1
+
+            if not first_image_mtime:
+                first_image_mtime = datetime.fromtimestamp(
+                    image_path.stat().st_mtime)
+
+            with image_path.open("rb") as image_file:
+                exif_image = exif.Image(image_file)
+
+            # image ordering is preserved in the capture time saved,
+            # see above docstring
+            exif_image.datetime_original = first_image_mtime.strftime(
+                exif.DATETIME_STR_FORMAT)
+            exif_image.datetime_digitized = first_image_mtime.strftime(
+                exif.DATETIME_STR_FORMAT)
+            # There's 3 decimal places for the milliseconds, so zero-pad to 3
+            exif_image.subsec_time_original = f"{image_num - 1:0>3d}"
+            exif_image.subsec_time_digitized = f"{image_num - 1:0>3d}"
+
+            print(f"{image_path.name} getting datetime: "
+                  f"{exif_image.datetime_original}:"
+                  f"{exif_image.subsec_time_original}")
+
+            # with image_path.open("wb") as image_file_write:
+            #     image_file_write.write(exif_image.get_file())
 
 
 if __name__ == "__main__":
