@@ -79,6 +79,9 @@ class NoritsuEZCCleaner:
             # convert roll number to an int, and then zero pad it as desired
             formatted_roll_number = f"{int(roll_number):0>{roll_padding}d}"
             if use_frame_names:
+                print("WARNING: this may cause files to be deleted due to "
+                      "multiple files having the same frame name such as "
+                      "### or for cases of film with no rebate")
                 frame_name = match.group("frame_name")
             else:
                 frame_number = match.group("frame_number")
