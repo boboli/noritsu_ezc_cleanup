@@ -52,7 +52,7 @@ class NoritsuEZCCleaner:
 
     def clean(self):
         for image_dir in self.find_all_image_dirs():
-            self.add_date_info(image_dir)
+            self.fix_timestamps(image_dir)
             self.rename_images(image_dir)
 
     def find_all_image_dirs(self):
@@ -119,7 +119,7 @@ class NoritsuEZCCleaner:
             print(f"{image_path.name} => {new_filename}{suffix}")
             # image_path.rename(new_filepath)
 
-    def add_date_info(self, images_dir):
+    def fix_timestamps(self, images_dir):
         """
         Adds the DateTimeOriginal EXIF tag to all images, based on the
         filesystem modified timestamp of the file. This fixes the issue where
