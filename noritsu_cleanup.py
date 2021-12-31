@@ -35,7 +35,7 @@ class NoritsuEZCCleaner:
             self.search_path = Path(search_path)
 
     def clean(self):
-        for image_dir in sorted(self.find_all_image_dirs()):
+        for image_dir in self.find_all_image_dirs():
             self.rename_images(image_dir)
 
     def find_all_image_dirs(self):
