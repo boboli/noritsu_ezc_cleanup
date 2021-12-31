@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import re
 
 # assume folder structure:
@@ -50,6 +51,8 @@ class NoritsuEZCCleaner:
         Renames the images in the images_dir directory in the format:
             R{roll_number}F{frame_name}.jpg (or .tif)
 
+        images_dir is a path object that represents the directory of images to
+        operate on.
         roll_padding is how many characters of zero padding to add for the
         roll number
         use_frame_names is whether to use the DX reader frame numbers/names
@@ -99,6 +102,9 @@ class NoritsuEZCCleaner:
         rotating a file in Finder or Adobe Bridge will adjust the image's
         modified timestamp, messing up programs that sort by Capture Time
         (such as Lightroom).
+
+        images_dir is a path object that represents the directory of images to
+        operate on.
         """
         pass
 
