@@ -77,7 +77,8 @@ class NoritsuEZCCleaner:
             prefix = image_path.parent  # the full path of the parent dir
             suffix = image_path.suffix  # the extension including the .
 
-            if str(suffix).lower() not in (".jpg", ".tif"):
+            if str(suffix).lower() not in (".jpg", ".tif") or \
+                    not image_path.is_file():
                 continue
 
             match = self.image_name_matcher.match(filename)
