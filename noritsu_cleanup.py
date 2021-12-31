@@ -24,15 +24,29 @@ class NoritsuEZCCleaner:
         r"(?P<frame_name>.*)"
     image_name_matcher = re.compile(IMAGE_NAME_PATTERN)
 
-    def __init__(self, search_path=None):
+    def __init__(self,
+                 search_path=None,
+                 roll_padding=4,
+                 use_frame_names=False):
         """
         search_path is a str representing the path to search for images to fix.
         If not provided, search_path will be the current working directory.
+        roll_padding is how many characters of zero padding to add for the
+        roll number
+        use_frame_names is whether to use the DX reader frame numbers/names
+        in the final filename or just number them sequentially.
         """
         if not search_path:
             self.search_path = Path.cwd()
         else:
             self.search_path = Path(search_path)
+
+        self.roll_padding = roll_padding
+        self.use_frame_names = use_frame_names
+        if use_frame_names:
+            print("WARNING: this may cause files to be deleted due to "
+                  "multiple files having the same frame name such as "
+                  "### or for cases of film with no rebate")
 
     def clean(self):
         for image_dir in self.find_all_image_dirs():
@@ -58,18 +72,13 @@ class NoritsuEZCCleaner:
 
         return found_dirs
 
-    def rename_images(self, images_dir,
-                      roll_padding=4, use_frame_names=False):
+    def rename_images(self, images_dir):
         """
         Renames the images in the images_dir directory in the format:
             R{roll_number}F{frame_name}.jpg (or .tif)
 
         images_dir is a path object that represents the directory of images to
         operate on.
-        roll_padding is how many characters of zero padding to add for the
-        roll number
-        use_frame_names is whether to use the DX reader frame numbers/names
-        in the final filename or just number them sequentially.
         """
         roll_number = None
         for image_path in sorted(images_dir.glob("*")):
@@ -94,11 +103,9 @@ class NoritsuEZCCleaner:
                     f"image filename doesn't match other files: {image_path}")
 
             # convert roll number to an int, and then zero pad it as desired
-            formatted_roll_number = f"{int(roll_number):0>{roll_padding}d}"
-            if use_frame_names:
-                print("WARNING: this may cause files to be deleted due to "
-                      "multiple files having the same frame name such as "
-                      "### or for cases of film with no rebate")
+            formatted_roll_number = \
+                f"{int(roll_number):0>{self.roll_padding}d}"
+            if self.use_frame_names:
                 frame_name = match.group("frame_name")
             else:
                 frame_number = match.group("frame_number")
@@ -134,7 +141,22 @@ if __name__ == "__main__":
         "will use current working directory."
     )
 
+    parser.add_argument(
+        "--roll_padding", type=int, default=4,
+        help="how many characters of zero padding to add for the roll number. "
+        "default: 4"
+    )
+    parser.add_argument(
+        "--use_frame_names", type=bool, default=False,
+        help="use_frame_names is whether to use the DX reader frame "
+        "numbers/names in the final filename or just number them "
+        "sequentially. default: False"
+    )
+
     args = parser.parse_args()
 
-    cleaner = NoritsuEZCCleaner(args.search_path)
+    cleaner = NoritsuEZCCleaner(
+        search_path=args.search_path,
+        roll_padding=args.roll_padding,
+        use_frame_names=args.use_frame_names)
     cleaner.clean()
