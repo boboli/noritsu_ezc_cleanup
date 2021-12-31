@@ -28,7 +28,7 @@ class NoritsuEZCCleaner:
         for image_dir in sorted(self.find_all_image_dirs()):
             self.rename_images(image_dir)
 
-    def find_all_image_dirs(self):
+    def find_all_image_dirs(self, path=None):
         """
         EZController exports images into a dir for each order number, where the
         directory name is just the order number, zero-padded to 8 characters.
@@ -36,8 +36,13 @@ class NoritsuEZCCleaner:
 
         Unfortunately, the parent directory (which is the date) is also 8
         digits...
+
+        input path is the Path representing the root path to search, if None,
+        this will use the current working directory.
         """
-        return Path.cwd().glob("**/" + ("[0-9]" * 8))
+        if not path:
+            path = Path.cwd()
+        return path.glob("**/" + ("[0-9]" * 8))
 
     def rename_images(self, images_dir,
                       roll_padding=4, use_frame_names=False):
@@ -52,11 +57,11 @@ class NoritsuEZCCleaner:
         """
         roll_number = None
         for image_path in sorted(images_dir.glob("*")):
-            filename = image_path.stem
-            prefix = image_path.parent
-            suffix = image_path.suffix
+            filename = image_path.stem  # the filename without extension
+            prefix = image_path.parent  # the full path of the parent dir
+            suffix = image_path.suffix  # the extension including the .
 
-            if suffix not in (".jpg", ".tif"):
+            if str(suffix).lower() not in (".jpg", ".tif"):
                 continue
 
             match = self.image_name_matcher.match(filename)
@@ -71,6 +76,7 @@ class NoritsuEZCCleaner:
                 raise ValueError(
                     f"image filename doesn't match other files: {image_path}")
 
+            # convert roll number to an int, and then zero pad it as desired
             formatted_roll_number = f"{int(roll_number):0>{roll_padding}d}"
             if use_frame_names:
                 frame_name = match.group("frame_name")
