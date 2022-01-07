@@ -2,7 +2,7 @@ from pathlib import Path
 from datetime import datetime
 
 import argparse
-import exif
+import exiftool
 import re
 
 # assume folder structure:
@@ -18,6 +18,8 @@ import re
 
 
 class NoritsuEZCCleaner:
+    EXIF_DATETIME_STR_FORMAT = "%Y:%m:%d %H:%M:%S"
+    EXIFTOOL_SUCCESSFUL_WRITE_MESSAGE = "1 image files updated"
     IMAGE_DIR_GLOB_PATTERN = "[0-9]" * 8
     IMAGE_NAME_PATTERN = \
         r"(?P<roll_number>\d{8})" \
@@ -27,10 +29,13 @@ class NoritsuEZCCleaner:
     image_name_matcher = re.compile(IMAGE_NAME_PATTERN)
 
     def __init__(self,
+                 exiftool_client,
                  search_path=None,
                  roll_padding=4,
                  use_frame_names=False):
         """
+        exiftool_client is a exiftool.ExifTool object that will be used to
+        perform all EXIF modifications required.
         search_path is a str representing the path to search for images to fix.
         If not provided, search_path will be the current working directory.
         roll_padding is how many characters of zero padding to add for the
@@ -38,6 +43,8 @@ class NoritsuEZCCleaner:
         use_frame_names is whether to use the DX reader frame numbers/names
         in the final filename or just number them sequentially.
         """
+        self.exiftool = exiftool_client
+
         if not search_path:
             self.search_path = Path.cwd()
         else:
@@ -176,25 +183,31 @@ class NoritsuEZCCleaner:
                 first_image_mtime = datetime.fromtimestamp(
                     image_path.stat().st_mtime)
 
-            with image_path.open("rb") as image_file:
-                exif_image = exif.Image(image_file)
-
             # image ordering is preserved in the capture time saved,
             # see above docstring
-            exif_image.datetime_original = first_image_mtime.strftime(
-                exif.DATETIME_STR_FORMAT)
-            exif_image.datetime_digitized = first_image_mtime.strftime(
-                exif.DATETIME_STR_FORMAT)
+            datetime_original = first_image_mtime.strftime(
+                self.EXIF_DATETIME_STR_FORMAT)
+            datetime_digitized = first_image_mtime.strftime(
+                self.EXIF_DATETIME_STR_FORMAT)
             # There's 3 decimal places for the milliseconds, so zero-pad to 3
-            exif_image.subsec_time_original = f"{image_num - 1:0>3d}"
-            exif_image.subsec_time_digitized = f"{image_num - 1:0>3d}"
+            subsec_time_original = f"{image_num - 1:0>3d}"
+            subsec_time_digitized = f"{image_num - 1:0>3d}"
+
+            tags_to_write = {
+                "EXIF:DateTimeOriginal": datetime_original,
+                "EXIF:DateTimeDigitized": datetime_digitized,
+                "EXIF:SubSecTimeOriginal": subsec_time_original,
+                "EXIF:SubSecTimeDigitized": subsec_time_digitized,
+            }
 
             print(f"{image_path.name} getting datetime: "
-                  f"{exif_image.datetime_original}:"
-                  f"{exif_image.subsec_time_original}")
+                  f"{datetime_original}:"
+                  f"{subsec_time_original}")
 
-            with image_path.open("wb") as image_file_write:
-                image_file_write.write(exif_image.get_file())
+            result = self.exiftool.set_tags(tags_to_write, str(image_path))
+            result = result.decode("ascii").strip()
+            if result != self.EXIFTOOL_SUCCESSFUL_WRITE_MESSAGE:
+                print(f"failed to update timestamps on image: {image_path}")
 
 
 if __name__ == "__main__":
@@ -222,8 +235,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    cleaner = NoritsuEZCCleaner(
-        search_path=args.search_path,
-        roll_padding=args.roll_padding,
-        use_frame_names=args.use_frame_names)
-    cleaner.clean()
+    # the -G and -n are the default common args, -overwrite_original makes sure
+    # to not leave behind the "original" files
+    common_args = ["-G", "-n", "-overwrite_original"]
+    with exiftool.ExifTool(common_args=common_args) as et:
+        cleaner = NoritsuEZCCleaner(
+            exiftool_client=et,
+            search_path=args.search_path,
+            roll_padding=args.roll_padding,
+            use_frame_names=args.use_frame_names)
+        cleaner.clean()

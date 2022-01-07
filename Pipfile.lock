@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "5cbf744f84b04d0b83ebeec13ed6cd55032fe34f5c87cde0e38b7eddad86f7e5"
+            "sha256": "60ed92d8d9fdae10a54b0a46bdce13e86f6f577fefdc6c17539ff0589eab5d43"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -31,6 +31,14 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==0.7.2"
+        },
+        "pyexiftool": {
+            "hashes": [
+                "sha256:24db1ca52e5091da456558d61db8f5a7d18132b7eb4fb297b45399dd2dc8cea9",
+                "sha256:eb348976e7cebbb4317885b4d91d1fea02712aac6357c0cdbe61892da16e464e"
+            ],
+            "index": "pypi",
+            "version": "==0.4.11"
         }
     },
     "develop": {
@@ -51,11 +59,11 @@
         },
         "decorator": {
             "hashes": [
-                "sha256:7b12e7c3c6ab203a29e157335e9122cb03de9ab7264b137594103fd4a683b374",
-                "sha256:e59913af105b9860aa2c8d3272d9de5a56a4e608db9a2f167a8480b323d529a7"
+                "sha256:637996211036b6385ef91435e4fae22989472f9d571faba8927ba8253acbc330",
+                "sha256:b8c3f85900b9dc423225913c5aace94729fe1fa9763b38939a95226f02d37186"
             ],
             "markers": "python_version >= '3.5'",
-            "version": "==5.1.0"
+            "version": "==5.1.1"
         },
         "flake8": {
             "hashes": [
@@ -67,11 +75,11 @@
         },
         "ipython": {
             "hashes": [
-                "sha256:cb6aef731bf708a7727ab6cde8df87f0281b1427d41e65d62d4b68934fa54e97",
-                "sha256:fc60ef843e0863dd4e24ab2bb5698f071031332801ecf8d1aeb4fb622056545c"
+                "sha256:346c74db7312c41fa566d3be45d2e759a528dcc2994fe48aac1a03a70cd668a3",
+                "sha256:4c4234cdcc6b8f87c5b5c7af9899aa696ac5cfcf0e9f6d0688018bbee5c73bce"
             ],
             "index": "pypi",
-            "version": "==7.30.1"
+            "version": "==7.31.0"
         },
         "jedi": {
             "hashes": [
@@ -152,19 +160,19 @@
         },
         "pygments": {
             "hashes": [
-                "sha256:b8e67fe6af78f492b3c4b3e2970c0624cbf08beb1e493b2c99b9fa1b67a20380",
-                "sha256:f398865f7eb6874156579fdf36bc840a03cab64d1cde9e93d68f46a425ec52c6"
+                "sha256:44238f1b60a76d78fc8ca0528ee429702aae011c265fe6a8dd8b63049ae41c65",
+                "sha256:4e426f72023d88d03b2fa258de560726ce890ff3b630f88c21cbb8b2503b8c6a"
             ],
             "markers": "python_version >= '3.5'",
-            "version": "==2.10.0"
+            "version": "==2.11.2"
         },
         "setuptools": {
             "hashes": [
-                "sha256:5c89b1a14a67ac5f0956f1cb0aeb7d1d3f4c8ba4e4e1ab7bf1af4933f9a2f0fe",
-                "sha256:675fcebecb43c32eb930481abf907619137547f4336206e4d673180242e1a278"
+                "sha256:2932bfeb248c648dc411ea9714d5a6de7a33ef1a0db2f0fce644d8172b0479e8",
+                "sha256:2b62b3dbec1fe95585dadf3bd9a014c8c578624918190428c3a7994bb52ae2b8"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==60.2.0"
+            "version": "==60.3.1"
         },
         "traitlets": {
             "hashes": [
