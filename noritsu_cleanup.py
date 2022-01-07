@@ -158,11 +158,6 @@ class NoritsuEZCCleaner:
         frames get out of order, because LR would have to use filename to sort
         since they'd all have the same capture time.
 
-        TODO: There's something incompatible with Adobe Bridge, where it can't
-        rotate any of the files after this script updates the EXIF data.
-
-        TODO: also test on TIF files to make sure they behave properly.
-
         images_dir is a path object that represents the directory of images to
         operate on.
         """
