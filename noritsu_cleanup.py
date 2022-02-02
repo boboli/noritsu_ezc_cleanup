@@ -227,7 +227,7 @@ if __name__ == "__main__":
         "default: 4"
     )
     parser.add_argument(
-        "--use_frame_names", type=bool, default=False,
+        "--use_frame_names", action="store_true",
         help="use_frame_names is whether to use the DX reader frame "
         "numbers/names in the final filename or just number them "
         "sequentially. default: False"
