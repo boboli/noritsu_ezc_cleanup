@@ -59,9 +59,13 @@ class NoritsuEZCCleaner:
 
     def clean(self):
         for image_dir in self.find_all_image_dirs():
-            self.delete_infohd_file(image_dir)
-            self.fix_timestamps(image_dir)
-            self.rename_images(image_dir)
+            try:
+                self.delete_infohd_file(image_dir)
+                self.fix_timestamps(image_dir)
+                self.rename_images(image_dir)
+            except ValueError as e:
+                print(e)
+                print("skipping directory {image_dir}...")
 
     def find_all_image_dirs(self):
         """
@@ -124,7 +128,8 @@ class NoritsuEZCCleaner:
                 roll_number = match.group("roll_number")
             elif roll_number != match.group("roll_number"):
                 raise ValueError(
-                    f"image filename doesn't match other files: {image_path}")
+                    f"image has different roll number than other files: "
+                    f"{image_path}")
 
             # convert roll number to an int, and then zero pad it as desired
             formatted_roll_number = \
@@ -171,11 +176,19 @@ class NoritsuEZCCleaner:
         first_image_mtime = None
         image_num = 0
         for image_path in sorted(images_dir.glob("*")):
+            filename = image_path.stem  # the filename without extension
             suffix = image_path.suffix  # the extension including the .
 
             if str(suffix).lower() not in (".jpg", ".tif") or \
                     not image_path.is_file():
                 continue
+
+            match = self.image_name_matcher.match(filename)
+            if not match:
+                raise ValueError(
+                    f"image filename doesn't match expected format: "
+                    f"{image_path}")
+
             # only bump counter for jpgs and tiffs
             image_num += 1
 
