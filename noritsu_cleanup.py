@@ -65,7 +65,7 @@ class NoritsuEZCCleaner:
                 self.rename_images(image_dir)
             except ValueError as e:
                 print(e)
-                print("skipping directory {image_dir}...")
+                print(f"skipping directory {image_dir}...")
 
     def find_all_image_dirs(self):
         """
