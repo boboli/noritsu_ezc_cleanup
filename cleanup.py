@@ -34,8 +34,8 @@ class NoritsuEZCCleaner:
                  roll_padding=4,
                  use_frame_names=False):
         """
-        exiftool_client is a exiftool.ExifTool object that will be used to
-        perform all EXIF modifications required.
+        exiftool_client is a exiftool.ExifToolHelper object that will be used
+        to perform all EXIF modifications required.
         search_path is a str representing the path to search for images to fix.
         If not provided, search_path will be the current working directory.
         roll_padding is how many characters of zero padding to add for the
@@ -217,10 +217,18 @@ class NoritsuEZCCleaner:
                   f"{datetime_original}:"
                   f"{subsec_time_original}")
 
-            result = self.exiftool.set_tags(tags_to_write, str(image_path))
-            result = result.decode("ascii").strip()
-            if result != self.EXIFTOOL_SUCCESSFUL_WRITE_MESSAGE:
-                print(f"failed to update timestamps on image: {image_path}")
+            try:
+                result = self.exiftool.set_tags(str(image_path), tags_to_write)
+            except exiftool.exceptions.ExifToolExecuteError as err:
+                print(f"exiftool error while updating timestamps on image: "
+                      f"{image_path}")
+                print(f"error: {err.stdout}")
+            else:
+                result = result.strip()
+                if result != self.EXIFTOOL_SUCCESSFUL_WRITE_MESSAGE:
+                    print(f"failed to update timestamps on image: "
+                          f"{image_path}")
+                    print(f"exiftool: {result}")
 
 
 if __name__ == "__main__":
@@ -251,7 +259,7 @@ if __name__ == "__main__":
     # the -G and -n are the default common args, -overwrite_original makes sure
     # to not leave behind the "original" files
     common_args = ["-G", "-n", "-overwrite_original"]
-    with exiftool.ExifTool(common_args=common_args) as et:
+    with exiftool.ExifToolHelper(common_args=common_args) as et:
         cleaner = NoritsuEZCCleaner(
             exiftool_client=et,
             search_path=args.search_path,
