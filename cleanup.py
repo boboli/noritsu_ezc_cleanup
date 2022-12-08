@@ -60,6 +60,7 @@ class NoritsuEZCCleaner:
     def clean(self):
         for image_dir in self.find_all_image_dirs():
             try:
+                self.delete_thm_files(image_dir)
                 self.delete_infohd_file(image_dir)
                 self.fix_timestamps(image_dir)
                 self.rename_images(image_dir)
@@ -99,6 +100,19 @@ class NoritsuEZCCleaner:
         if infohd_path.exists() and infohd_path.is_file():
             print(f"deleting {infohd_path}")
             infohd_path.unlink()
+
+    def delete_thm_files(self, images_dir):
+        """
+        Deletes the *.thm thumbnail files that EZC generates when outputting
+        TIFFs.
+
+        images_dir is a path object that represents the directory of images to
+        operate on.
+        """
+        for thm_file in images_dir.glob("*.thm"):
+            if thm_file.exists() and thm_file.is_file():
+                print(f"deleting {thm_file}")
+                thm_file.unlink()
 
     def rename_images(self, images_dir):
         """
