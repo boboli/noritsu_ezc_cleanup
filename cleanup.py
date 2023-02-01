@@ -80,8 +80,8 @@ class NoritsuEZCCleaner:
         found_dirs = []
         # if the search_path itself is a image dir, add it to beginning of
         # results
-        if self.search_path.is_dir() and self.search_path.match(
-                self.IMAGE_DIR_GLOB_PATTERN):
+        if self.search_path.is_dir() and \
+                re.match(self.IMAGE_DIR_GLOB_PATTERN, self.search_path.name):
             found_dirs.append(self.search_path)
         found_dirs += sorted(
             self.search_path.glob("**/" + self.IMAGE_DIR_GLOB_PATTERN))
