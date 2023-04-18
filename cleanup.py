@@ -128,7 +128,7 @@ class NoritsuEZCCleaner:
             suffix = image_path.suffix  # the extension including the .
 
             if str(suffix).lower() not in (".jpg", ".tif") or \
-                    not image_path.is_file():
+                    str(filename).startswith(".") or not image_path.is_file():
                 continue
 
             match = self.image_name_matcher.match(filename)
@@ -197,7 +197,7 @@ class NoritsuEZCCleaner:
             suffix = image_path.suffix  # the extension including the .
 
             if str(suffix).lower() not in (".jpg", ".tif") or \
-                    not image_path.is_file():
+                    str(filename).startswith(".") or not image_path.is_file():
                 continue
 
             match = self.image_name_matcher.match(filename)
