@@ -24,8 +24,7 @@ class NoritsuEZCCleaner:
     IMAGE_NAME_PATTERN = \
         r"(?P<roll_number>\d{8})" \
         r"(?P<frame_number>\d{4})" \
-        r"_" \
-        r"(?P<frame_name>.*)"
+        r"(_(?P<frame_name>.*))?"
     image_name_matcher = re.compile(IMAGE_NAME_PATTERN)
 
     def __init__(self,
@@ -150,6 +149,10 @@ class NoritsuEZCCleaner:
                 f"{int(roll_number):0>{self.roll_padding}d}"
             if self.use_frame_names:
                 frame_name = match.group("frame_name")
+                if not frame_name:
+                    raise ValueError(
+                        f"image filename doesn't contain the frame name:"
+                        f"{image_path}")
             else:
                 frame_number = match.group("frame_number")
                 frame_name = f"{int(frame_number):0>2d}"
